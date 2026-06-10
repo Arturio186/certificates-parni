@@ -8,7 +8,7 @@ const createTransport = () =>
   nodemailer.createTransport({
     host: 'smtp.yandex.ru',
     port: 465,
-    secure: true, // SSL
+    secure: true,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD,
@@ -45,7 +45,6 @@ const sendCertificateEmail = async ({ to, amount, code, imageBuffer }) => {
         filename: `certificate-${code}.png`,
         content: imageBuffer,
         contentType: 'image/png',
-        // Встраиваем в письмо как inline-изображение
         cid: 'certificate_image',
       },
     ],

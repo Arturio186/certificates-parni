@@ -2,26 +2,71 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-/**
- * Настройки текста на картинке.
- * Меняй под свой дизайн.
- */
 const TEXT_CONFIG = {
-  // Код сертификата
   code: {
     fontSize: 27,
-    fontFamily: 'Arial',
+    fontFamily: 'CertFont',
     color: '#2947F1',
     x: 640,
-    y: 1892,
+    y: 1850,
     fontWeight: 'bold',
   }
 };
 
 /**
- * Строит SVG-оверлей с текстом поверх картинки.
+ * Загружает шрифт из папки fonts/ и возвращает base64 строку.
+ * Sharp/librsvg требует именно base64 внутри SVG — внешние file:// пути не работают.
  */
-const buildSvgOverlay = (width, height, fields) => {
+const loadFontAsBase64 = (fontFileName) => {
+  const fontPath = path.resolve('fonts', fontFileName);
+
+  if (!fs.existsSync(fontPath)) {
+    throw new Error(`Шрифт не найден: ${fontPath}`);
+  }
+
+  const fontBuffer = fs.readFileSync(fontPath);
+  return fontBuffer.toString('base64');
+};
+
+/**
+ * Определяет MIME-тип шрифта по расширению.
+ */
+const getFontMime = (fontFileName) => {
+  const ext = path.extname(fontFileName).toLowerCase();
+  const mimes = {
+    '.ttf': 'font/truetype',
+    '.otf': 'font/opentype',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+  };
+  return mimes[ext] || 'font/truetype';
+};
+
+/**
+ * Строит SVG-оверлей с текстом и встроенным шрифтом.
+ */
+const buildSvgOverlay = (width, height, fields, fontConfig) => {
+  // Блок @font-face со встроенным base64 шрифтом
+  const fontFaceBlock = fontConfig
+    ? `
+    <defs>
+      <style>
+        @font-face {
+          font-family: '${fontConfig.family}';
+          src: url('data:${fontConfig.mime};base64,${fontConfig.base64}') format('${fontConfig.format}');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: '${fontConfig.family}';
+          src: url('data:${fontConfig.mime};base64,${fontConfig.base64Bold}') format('${fontConfig.format}');
+          font-weight: bold;
+          font-style: normal;
+        }
+      </style>
+    </defs>`
+    : '';
+
   const textElements = fields
     .map(({ text, config, imgWidth }) => {
       const x = config.x === 'center' ? Math.round(imgWidth / 2) : config.x;
@@ -37,14 +82,13 @@ const buildSvgOverlay = (width, height, fields) => {
         fill="${config.color}"
         text-anchor="${anchor}"
         dominant-baseline="middle"
-        style="filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8))"
-      >${escapeXml(text)}</text>
-    `;
+      >${escapeXml(text)}</text>`;
     })
     .join('');
 
   return Buffer.from(`
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      ${fontFaceBlock}
       ${textElements}
     </svg>
   `);
@@ -69,30 +113,42 @@ const generateCertificateImage = async ({ amount, code }) => {
     throw new Error(`Шаблон для номинала ${amount} не найден: ${imagePath}`);
   }
 
-  // Получаем размеры оригинального изображения
   const metadata = await sharp(imagePath).metadata();
   const { width, height } = metadata;
 
-  // Формируем поля для наложения
+  let fontConfig = null;
+
+  try {
+    const fontFileName = 'RFDewiExpanded-Bold.ttf';
+
+    const base64 = loadFontAsBase64(fontFileName);
+    const base64Bold = base64;
+
+    fontConfig = {
+      family: 'CertFont',
+      base64,
+      base64Bold,
+      mime: getFontMime(fontFileName),
+      format: path.extname(fontFileName) === '.ttf' ? 'truetype' : 'opentype',
+    };
+
+    console.log('[ImageGenerator] Шрифт загружен успешно');
+  } catch (err) {
+    console.warn(`[ImageGenerator] Шрифт не загружен, используется системный: ${err.message}`);
+  }
+
   const fields = [
     {
       text: code,
       config: TEXT_CONFIG.code,
       imgWidth: width,
     },
-  ].filter((f) => f.text); // убираем пустые поля
+  ].filter((f) => f.text);
 
-  const svgOverlay = buildSvgOverlay(width, height, fields);
+  const svgOverlay = buildSvgOverlay(width, height, fields, fontConfig);
 
-  // Накладываем SVG поверх картинки
   const outputBuffer = await sharp(imagePath)
-    .composite([
-      {
-        input: svgOverlay,
-        top: 0,
-        left: 0,
-      },
-    ])
+    .composite([{ input: svgOverlay, top: 0, left: 0 }])
     .png()
     .toBuffer();
 
