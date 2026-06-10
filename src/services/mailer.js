@@ -1,9 +1,5 @@
 const nodemailer = require('nodemailer');
 
-/**
- * Создаём транспорт один раз при старте (переиспользуем соединение).
- * SSL на 465.
- */
 const createTransport = () =>
   nodemailer.createTransport({
     host: 'smtp.yandex.ru',

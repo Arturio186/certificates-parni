@@ -13,10 +13,6 @@ const TEXT_CONFIG = {
   }
 };
 
-/**
- * Загружает шрифт из папки fonts/ и возвращает base64 строку.
- * Sharp/librsvg требует именно base64 внутри SVG — внешние file:// пути не работают.
- */
 const loadFontAsBase64 = (fontFileName) => {
   const fontPath = path.resolve('fonts', fontFileName);
 
@@ -28,9 +24,6 @@ const loadFontAsBase64 = (fontFileName) => {
   return fontBuffer.toString('base64');
 };
 
-/**
- * Определяет MIME-тип шрифта по расширению.
- */
 const getFontMime = (fontFileName) => {
   const ext = path.extname(fontFileName).toLowerCase();
   const mimes = {
@@ -42,11 +35,7 @@ const getFontMime = (fontFileName) => {
   return mimes[ext] || 'font/truetype';
 };
 
-/**
- * Строит SVG-оверлей с текстом и встроенным шрифтом.
- */
 const buildSvgOverlay = (width, height, fields, fontConfig) => {
-  // Блок @font-face со встроенным base64 шрифтом
   const fontFaceBlock = fontConfig
     ? `
     <defs>
@@ -102,10 +91,6 @@ const escapeXml = (str) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-/**
- * Генерирует картинку сертификата.
- * @returns {Promise<Buffer>} PNG-буфер
- */
 const generateCertificateImage = async ({ amount, code }) => {
   const imagePath = path.resolve('images', `${amount}.png`);
 
