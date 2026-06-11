@@ -5,15 +5,6 @@ const { sendCertificateEmail } = require('../services/mailer');
 
 const router = Router();
 
-/**
- * POST /generateCertificate
- *
- * Body:
- * {
- *   amount: 3000,              // номинал (должна быть картинка images/3000.png)
- *   recipientEmail: "...",     // куда слать
- * }
- */
 router.post('/', async (req, res) => {
   const { amount, recipientEmail } = req.body;
 
@@ -40,37 +31,28 @@ router.post('/', async (req, res) => {
     });
   }
 
-  // --- Отвечаем клиенту сразу (не ждём тяжёлых операций) ---
-  // Вебхук получает ответ мгновенно, работа идёт в фоне.
   res.status(202).json({
     success: true,
     message: 'Сертификат создаётся, письмо будет отправлено',
   });
 
-  // --- Фоновая обработка ---
   processCertificate({ amount, recipientEmail }).catch((err) => {
     console.error('[Certificate] Ошибка при обработке сертификата:', err);
   });
 });
 
-/**
- * Вся тяжёлая работа — асинхронно, не блокирует event loop.
- */
 const processCertificate = async ({ amount, recipientEmail }) => {
   console.log(`[Certificate] Начало обработки: amount=${amount}, email=${recipientEmail}`);
 
-  // Шаг 1: YClients — создаём сертификат, получаем код
   const certificate = await createCertificate({ amount, recipientEmail });
   console.log(`[Certificate] Шаг 1 ✓ Код: ${certificate.code}`);
 
-  // Шаг 2: Генерация картинки
   const imageBuffer = await generateCertificateImage({
     amount,
     code: certificate.code
   });
   console.log(`[Certificate] Шаг 2 ✓ Картинка сгенерирована (${imageBuffer.length} bytes)`);
 
-  // Шаг 3: Отправка на почту
   await sendCertificateEmail({
     to: recipientEmail,
     amount,
