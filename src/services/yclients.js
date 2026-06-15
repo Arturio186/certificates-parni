@@ -80,7 +80,7 @@ const generateCode = async (goodId) => {
 };
 
 
-const createStorageOperation = async ({ goodId, storageId, amount, code }) => {
+const createStorageOperation = async ({ goodId, storageId, amount, codes }) => {
   const url = `https://api.yclients.com/api/v1/storage_operations/operation/${process.env.YCLIENTS_COMPANY_ID}`;
 
   const body = {
@@ -88,8 +88,8 @@ const createStorageOperation = async ({ goodId, storageId, amount, code }) => {
     create_date: Math.floor(Date.now() / 1000),
     storage_id: storageId,
     master_id: process.env.YCLIENTS_MASTER_ID,
-    goods_transactions: [
-      {
+    goods_transactions: codes.map(code => {
+      return {
         good_id: goodId,
         amount: 1,
         discount: 0,
@@ -97,8 +97,8 @@ const createStorageOperation = async ({ goodId, storageId, amount, code }) => {
         cost: amount,
         operation_unit_type: 1,
         good_special_number: code,
-      },
-    ],
+      }
+    })
   };
 
   console.log('[YClients] Создаём складскую операцию');
@@ -121,17 +121,23 @@ const createStorageOperation = async ({ goodId, storageId, amount, code }) => {
   return json;
 };
 
-const createCertificate = async ({ amount, recipientEmail }) => {
+const createCertificate = async ({ amount, recipientEmail, quantity }) => {
   const { goodId, storageId } = await findGoodByAmount(amount);
 
-  const code = await generateCode(goodId);
+  const codes = [];
 
-  await createStorageOperation({ goodId, storageId, amount, code });
+  for (let i = 1; i <= quantity; i++) {
+    const code = await generateCode(goodId);
+    
+    codes.push(code);
+    
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
 
-  console.log(`[YClients] Итоговый код сертификата: ${code}`);
+  await createStorageOperation({ goodId, storageId, amount, codes });
 
   return {
-    code,
+    codes,
     amount,
     recipientEmail,
     createdAt: new Date().toISOString(),

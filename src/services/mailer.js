@@ -28,32 +28,34 @@ const getTransporter = () => {
  * @param {string} params.code - Код сертификата
  * @param {Buffer} params.imageBuffer - PNG-буфер картинки
  */
-const sendCertificateEmail = async ({ to, amount, code, imageBuffer }) => {
+const sendCertificateEmail = async ({ to, amount, imageBufferByCode }) => {
   const transporter = getTransporter();
 
-  const filename = `certificate-${code}.png`;
+  const attachments = [...imageBufferByCode.entries()].map(([code, buffer]) => ({
+    filename: `certificate-${code}.png`,
+    content: buffer,
+    contentType: 'image/png',
+  }));
 
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to,
-    subject: `Ваш подарочный сертификат на ${amount} ₽`,
-    html: buildEmailHtml({ amount, code, filename }),
-    attachments: [
-      {
-        filename,
-        content: imageBuffer,
-        contentType: 'image/png',
-      },
-    ],
+    subject: imageBufferByCode.size === 1 ? 
+      `Ваш подарочный сертификат на ${amount} ₽` :
+      `Ваши подарочные сертификаты по ${amount} ₽`,
+    html: buildEmailHtml(),
+    attachments,
   };
 
   const info = await transporter.sendMail(mailOptions);
-  console.log(`[Mailer] Письмо отправлено: ${info.messageId} → ${to}`);
+
+  console.log(`[Mailer] Письмо отправлено: ${info.messageId} → ${to}, вложений: ${attachments.length}`);
 
   return info;
 };
 
-const buildEmailHtml = ({ amount, code, filename }) => `
+
+const buildEmailHtml = () => `
 <!DOCTYPE html>
 <html>
 <head>

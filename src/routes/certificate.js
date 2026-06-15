@@ -6,13 +6,20 @@ const { sendCertificateEmail } = require('../services/mailer');
 const router = Router();
 
 router.post('/', async (req, res) => {
-  const { amount, recipientEmail } = req.body;
+  const { amount, recipientEmail, quantity } = req.body;
 
   // --- Валидация ---
-  if (!amount || !recipientEmail) {
+  if (!amount || !recipientEmail || !quantity) {
     return res.status(400).json({
       success: false,
-      error: 'Поля amount и recipientEmail обязательны',
+      error: 'Поля amount, recipientEmail и quantity обязательны',
+    });
+  }
+
+  if (typeof quantity !== 'number' || quantity <= 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'quantity должен быть положительным числом',
     });
   }
 
@@ -36,32 +43,32 @@ router.post('/', async (req, res) => {
     message: 'Сертификат создаётся, письмо будет отправлено',
   });
 
-  processCertificate({ amount, recipientEmail }).catch((err) => {
+  processCertificate({ amount, recipientEmail, quantity }).catch((err) => {
     console.error('[Certificate] Ошибка при обработке сертификата:', err);
   });
 });
 
-const processCertificate = async ({ amount, recipientEmail }) => {
+const processCertificate = async ({ amount, recipientEmail, quantity }) => {
   console.log(`[Certificate] Начало обработки: amount=${amount}, email=${recipientEmail}`);
 
-  const certificate = await createCertificate({ amount, recipientEmail });
-  console.log(`[Certificate] Шаг 1 ✓ Код: ${certificate.code}`);
+  const certificate = await createCertificate({ amount, recipientEmail, quantity });
+  console.log(`[Certificate] Шаг 1 ✓ Коды: ${certificate.codes}`);
 
-  const imageBuffer = await generateCertificateImage({
+  const imageBufferByCode = await generateCertificateImage({
     amount,
-    code: certificate.code
+    codes: certificate.codes
   });
-  console.log(`[Certificate] Шаг 2 ✓ Картинка сгенерирована (${imageBuffer.length} bytes)`);
+  console.log(`[Certificate] Шаг 2 ✓ Картинки сгенерированы`);
 
   await sendCertificateEmail({
     to: recipientEmail,
     amount,
     code: certificate.code,
-    imageBuffer,
+    imageBufferByCode,
   });
   console.log(`[Certificate] Шаг 3 ✓ Письмо отправлено на ${recipientEmail}`);
 
-  console.log(`[Certificate] ✅ Готово! Сертификат ${certificate.code} выслан.`);
+  console.log(`[Certificate] ✅ Готово!`);
 };
 
 module.exports = router;

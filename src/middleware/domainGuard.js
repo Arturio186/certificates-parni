@@ -1,4 +1,8 @@
 const domainGuard = (req, res, next) => {
+  const origin = req.headers['origin'] || req.headers['referer'] || '';
+
+  console.log({origin, headers: req.headers});
+
   if (process.env.SKIP_ORIGIN_CHECK === 'true') {
     return next();
   }
@@ -7,8 +11,6 @@ const domainGuard = (req, res, next) => {
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
-
-  const origin = req.headers['origin'] || req.headers['referer'] || '';
 
   const isAllowed = allowedOrigins.some((allowed) => origin.startsWith(allowed));
 
@@ -19,8 +21,9 @@ const domainGuard = (req, res, next) => {
       error: 'Forbidden: origin not allowed',
     });
   }
-
+  
   const webhookSecret = process.env.WEBHOOK_SECRET;
+
   if (webhookSecret) {
     const incomingSecret = req.headers['x-webhook-secret'];
     if (incomingSecret !== webhookSecret) {

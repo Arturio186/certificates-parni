@@ -91,7 +91,35 @@ const escapeXml = (str) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const generateCertificateImage = async ({ amount, code }) => {
+const generateSingleImage = async ({ imagePath, width, height, fontConfig, code }) => {
+  const fields = [
+    {
+      text: String(code),
+      config: TEXT_CONFIG.code,
+      imgWidth: width,
+    },
+  ].filter((f) => f.text);
+
+  const svgOverlay = buildSvgOverlay(width, height, fields, fontConfig);
+
+  const outputBuffer = await sharp(imagePath)
+    .composite([{ input: svgOverlay, top: 0, left: 0 }])
+    .png()
+    .toBuffer();
+
+  console.log(`[ImageGenerator] Сертификат сгенерирован: код ${code} (${width}x${height}px)`);
+
+  return outputBuffer;
+};
+
+/**
+ * Генерирует картинки для массива кодов.
+ * @param {object} params
+ * @param {number} params.amount - Номинал (определяет шаблон)
+ * @param {number[]} params.codes - Массив кодов сертификатов
+ * @returns {Promise<Map<number, Buffer>>} Мапа: код → imageBuffer
+ */
+const generateCertificateImage = async ({ amount, codes }) => {
   const imagePath = path.resolve('images', `${amount}.png`);
 
   if (!fs.existsSync(imagePath)) {
@@ -105,14 +133,12 @@ const generateCertificateImage = async ({ amount, code }) => {
 
   try {
     const fontFileName = 'RFDewiExpanded-Bold.ttf';
-
     const base64 = loadFontAsBase64(fontFileName);
-    const base64Bold = base64;
 
     fontConfig = {
       family: 'CertFont',
       base64,
-      base64Bold,
+      base64Bold: base64,
       mime: getFontMime(fontFileName),
       format: path.extname(fontFileName) === '.ttf' ? 'truetype' : 'opentype',
     };
@@ -122,24 +148,23 @@ const generateCertificateImage = async ({ amount, code }) => {
     console.warn(`[ImageGenerator] Шрифт не загружен, используется системный: ${err.message}`);
   }
 
-  const fields = [
-    {
-      text: code,
-      config: TEXT_CONFIG.code,
-      imgWidth: width,
-    },
-  ].filter((f) => f.text);
+  const result = new Map();
 
-  const svgOverlay = buildSvgOverlay(width, height, fields, fontConfig);
+  for (const code of codes) {
+    const imageBuffer = await generateSingleImage({
+      imagePath,
+      width,
+      height,
+      fontConfig,
+      code,
+    });
 
-  const outputBuffer = await sharp(imagePath)
-    .composite([{ input: svgOverlay, top: 0, left: 0 }])
-    .png()
-    .toBuffer();
+    result.set(code, imageBuffer);
+  }
 
-  console.log(`[ImageGenerator] Сертификат сгенерирован (${width}x${height}px)`);
+  console.log(`[ImageGenerator] Готово: сгенерировано ${result.size} сертификатов`);
 
-  return outputBuffer;
+  return result;
 };
 
 module.exports = { generateCertificateImage };
