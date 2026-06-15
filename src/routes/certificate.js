@@ -8,6 +8,8 @@ const router = Router();
 router.post('/', async (req, res) => {
   const { amount, recipientEmail, quantity } = req.body;
 
+  console.log(req.body);
+
   // --- Валидация ---
   if (!amount || !recipientEmail || !quantity) {
     return res.status(400).json({
