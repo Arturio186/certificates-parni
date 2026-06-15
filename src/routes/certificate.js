@@ -13,7 +13,10 @@ router.post('/', async (req, res) => {
     });
   }
 
-  const { amount, recipientEmail, quantity } = req.body;
+  const { email: recipientEmail } = req.body;
+  
+  const quantity = req.body.quantity ?? 1;
+  const amount = Number(req.body.amount);
 
   console.log(req.body);
 
@@ -21,7 +24,7 @@ router.post('/', async (req, res) => {
   if (!amount || !recipientEmail || !quantity) {
     return res.status(400).json({
       success: false,
-      error: 'Поля amount, recipientEmail и quantity обязательны',
+      error: 'Поля amount, email и quantity обязательны',
     });
   }
 
