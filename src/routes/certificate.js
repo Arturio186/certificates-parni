@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
   }
 
   const { email: recipientEmail } = req.body;
-  
+
   const quantity = req.body.quantity ?? 1;
   const amount = Number(req.body.amount);
 
@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
     });
   }
 
-  res.status(202).json({
+  res.status(200).json({
     success: true,
     message: 'Сертификат создаётся, письмо будет отправлено',
   });
