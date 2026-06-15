@@ -6,6 +6,13 @@ const { sendCertificateEmail } = require('../services/mailer');
 const router = Router();
 
 router.post('/', async (req, res) => {
+  if (req.body.test === 'test') {
+    return res.status(200).json({
+      success: true,
+      message: 'hello tilda!!!',
+    });
+  }
+
   const { amount, recipientEmail, quantity } = req.body;
 
   console.log(req.body);

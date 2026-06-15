@@ -29,7 +29,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`\n🚀 Сервер запущен на порту ${PORT}`);
   console.log(`   NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`   SKIP_ORIGIN_CHECK: ${process.env.SKIP_ORIGIN_CHECK}`);
   console.log(`   SMTP: ${process.env.SMTP_USER}\n`);
 });
 
