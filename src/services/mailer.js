@@ -20,15 +20,8 @@ const getTransporter = () => {
   return _transporter;
 };
 
-/**
- * Отправляет письмо с сертификатом.
- * @param {object} params
- * @param {string} params.to - Email получателя
- * @param {number} params.amount - Номинал
- * @param {string} params.code - Код сертификата
- * @param {Buffer} params.imageBuffer - PNG-буфер картинки
- */
-const sendCertificateEmail = async ({ to, amount, imageBufferByCode }) => {
+
+const sendCertificateEmail = async ({to, amount, imageBufferByCode}) => {
   const transporter = getTransporter();
 
   const attachments = [...imageBufferByCode.entries()].map(([code, buffer]) => ({
@@ -40,9 +33,7 @@ const sendCertificateEmail = async ({ to, amount, imageBufferByCode }) => {
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to,
-    subject: imageBufferByCode.size === 1 ? 
-      `Ваш подарочный сертификат на ${amount} ₽` :
-      `Ваши подарочные сертификаты по ${amount} ₽`,
+    subject: `Тот самый подарок`,
     html: buildEmailHtml(),
     attachments,
   };
@@ -57,33 +48,185 @@ const sendCertificateEmail = async ({ to, amount, imageBufferByCode }) => {
 
 const buildEmailHtml = () => `
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Подарочный сертификат</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тот самый подарок</title>
 </head>
-<body style="margin:0; padding:0; background:#f4f4f4; font-family: Arial, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4; padding: 40px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:12px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 36px 40px 10px; text-align: center;">
-              <p style="font-size:17px; color:#333; line-height:1.7; margin: 0 0 16px;">
-                Привет! 👋
-              </p>
-              <p style="font-size:15px; color:#555; line-height:1.8; margin: 0 0 12px;">
-                Это сертифкат бла бла его можно скачать и все такое (текст позже пропишем детально)
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+
+<body
+  style="
+    margin:0;
+    padding:0;
+    background-color:#f4f4f4;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  "
+>
+
+<table
+  role="presentation"
+  width="100%"
+  cellpadding="0"
+  cellspacing="0"
+  border="0"
+  bgcolor="#f4f4f4"
+  style="background:#f4f4f4;"
+>
+<tr>
+<td align="center" style="padding:36px;">
+
+<table
+  role="presentation"
+  width="600"
+  cellpadding="0"
+  cellspacing="0"
+  border="0"
+  bgcolor="#ffffff"
+  style="
+    background:#ffffff;
+    border-radius:18px;
+    overflow:hidden;
+    width:600px;
+    max-width:600px;
+  "
+>
+
+<tr>
+<td
+  style="
+    height:46px;
+    border-bottom:1px solid #e6e6e6;
+    padding:0 24px;
+  "
+>
+
+<table
+  role="presentation"
+  cellpadding="0"
+  cellspacing="0"
+  border="0"
+>
+<tr>
+<td
+  width="10"
+  height="10"
+  style="
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#e94b10;
+  "
+></td>
+
+<td width="8"></td>
+
+<td
+  width="10"
+  height="10"
+  style="
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#e9e9e9;
+  "
+></td>
+
+<td width="8"></td>
+
+<td
+  width="10"
+  height="10"
+  style="
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#d0ee57;
+  "
+></td>
+</tr>
+</table>
+
+</td>
+</tr>
+
+<tr>
+<td style="padding:54px 42px 48px;">
+
+<h1
+  style="
+    margin:0 0 34px;
+    color:#2947f1;
+    font-size:20px;
+    line-height:1.2;
+    font-weight:700;
+  "
+>
+Привет!
+</h1>
+
+<p
+  style="
+    margin:0 0 34px;
+    color:#2947f1;
+    font-size:16px;
+    line-height:1.75;
+    font-weight:600;
+  "
+>
+Твои электронные носки готовы к отправке парню.
+</p>
+
+<p
+  style="
+    margin:0 0 34px;
+    color:#2947f1;
+    font-size:16px;
+    line-height:1.75;
+    font-weight:600;
+  "
+>
+Файл с электронным сертификатом прикреплен к этому письму.
+Его можно переслать счастливчику, либо распечатать
+и подарить при встрече.
+</p>
+
+<p
+  style="
+    margin:0 0 34px;
+    color:#2947f1;
+    font-size:16px;
+    line-height:1.75;
+    font-weight:600;
+  "
+>
+Ждем его на стрижки, уходы и полный ресет.
+</p>
+
+<p
+  style="
+    margin:0;
+    color:#2947f1;
+    font-size:16px;
+    line-height:1.75;
+    font-weight:600;
+  "
+>
+Остаемся на связи,<br>
+команда ПАРНИ
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
 </body>
 </html>
 `;
 
-module.exports = { sendCertificateEmail };
+module.exports = {sendCertificateEmail};

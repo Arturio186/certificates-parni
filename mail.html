@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тот самый подарок</title>
+  <style>
+    @font-face {
+      font-family: 'RFDewiExpanded-Bold';
+      src: url('https://static.tildacdn.com/tild3835-3437-4264-b237-383834383832/RFDewiExpanded-Bold.woff') format('woff');
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      font-family: 'RFDewiExpanded-Bold', Arial, sans-serif !important;
+      color: #2947f1;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      max-width: 600px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 48px 40px 40px;
+      text-align: left;
+      box-sizing: border-box;
+      margin: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .circles {
+      display: flex;
+      gap: 8px;
+    }
+
+    .circle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .bar {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      min-width: 100px;
+    }
+
+    .main-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 50px 0 28px 0;
+      line-height: 1.2;
+    }
+
+    .content-text {
+      font-size: 16px;
+      line-height: 1.7;
+      margin: 0 0 32px 0;
+      font-weight: 400;
+    }
+
+    .highlight {
+      font-weight: 700;
+    }
+
+    .brand {
+      font-weight: 700;
+    }
+
+    .emoji {
+      font-family: Arial, sans-serif !important;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 32px 20px 28px;
+      }
+      .top-bar {
+        top: 16px;
+        left: 18px;
+      }
+      .main-title {
+        font-size: 26px;
+        margin-top: 40px;
+      }
+      .content-text {
+        font-size: 15px;
+      }
+      .footer-text {
+        font-size: 14px;
+      }
+      .bar {
+        min-width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top-bar">
+      <div class="circles">
+        <div class="circle" style="background: #e94b10;"></div>
+        <div class="circle" style="background: #e9e9e9;"></div>
+        <div class="circle" style="background: #d0ee57;"></div>
+      </div>
+    </div>
+    <div class="bar"></div>
+
+    <h1 class="main-title">
+      Привет!
+    </h1>
+
+    <p class="content-text">
+      Твои электронные носки готовы к отправке парню.
+    </p>
+
+    <p class="content-text">
+      Файл с электронным сертификатом прикреплен к этому письму. Его можно переслать счастливчику, либо распечатать и подарить при встрече.
+    </p>
+
+    <p class="content-text">
+      Ждем его на стрижки, уходы и полный ресет.
+    </p>
+
+    <p class="content-text">
+      Остаемся на связи,<br>
+      команда ПАРНИ
+    </p>
+
+
+  </div>
+</body>
+</html>
