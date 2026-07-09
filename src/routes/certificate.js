@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
   });
 
   Promise.all(req.body.payment.products.map(product => {
-    return processCertificate({ amount: product.price, recipientEmail, quantity: product.quantity })
+    return processCertificate({ amount: Number(product.price), recipientEmail, quantity: product.quantity })
       .catch((err) => {
         console.error('[Certificate] Ошибка при обработке сертификата:', err);
       })
