@@ -5,6 +5,14 @@ const { sendCertificateEmail } = require('../services/mailer');
 
 const router = Router();
 
+const amountMap = {
+  3000: 3000,
+  8000: 5000,
+  13000: 10000,
+  18000: 15000,
+  23000: 20000
+};
+
 router.post('/', async (req, res) => {
   if (req.body.test === 'test') {
     return res.status(200).json({
@@ -16,7 +24,9 @@ router.post('/', async (req, res) => {
   const { email: recipientEmail } = req.body;
 
   const quantity = req.body.quantity ?? 1;
-  const amount = Number(req.body.amount);
+  const amount = amountMap[Number(req.body.amount)];
+
+  console.log({body: req.body});
 
   // --- Валидация ---
   if (!amount || !recipientEmail || !quantity) {
