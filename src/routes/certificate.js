@@ -26,29 +26,15 @@ router.post('/', async (req, res) => {
   const quantity = req.body.quantity ?? 1;
   const amount = amountMap[Number(req.body.amount)];
 
-  console.log({body: req.body});
-
   // --- Валидация ---
-  if (!amount || !recipientEmail || !quantity) {
+  if (!recipientEmail || !req.body.payment?.products?.length) {
     return res.status(400).json({
       success: false,
-      error: 'Поля amount, email и quantity обязательны',
+      error: 'Поля email и payment.products обязательны',
     });
   }
 
-  if (typeof quantity !== 'number' || quantity <= 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'quantity должен быть положительным числом',
-    });
-  }
-
-  if (typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'amount должен быть положительным числом',
-    });
-  }
+  console.log(req.body.payment.products);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(recipientEmail)) {
@@ -63,9 +49,12 @@ router.post('/', async (req, res) => {
     message: 'Сертификат создаётся, письмо будет отправлено',
   });
 
-  processCertificate({ amount, recipientEmail, quantity }).catch((err) => {
-    console.error('[Certificate] Ошибка при обработке сертификата:', err);
-  });
+  Promise.all(req.body.payment.products.map(product => {
+    return processCertificate({ amount: product.price, recipientEmail, quantity: product.quantity })
+      .catch((err) => {
+        console.error('[Certificate] Ошибка при обработке сертификата:', err);
+      })
+  }))
 });
 
 const processCertificate = async ({ amount, recipientEmail, quantity }) => {
