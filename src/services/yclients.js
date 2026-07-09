@@ -27,6 +27,8 @@ const findGoodByAmount = async (amount) => {
     (item) => item.loyalty_certificate_type?.balance === amount
   );
 
+  console.log(json.data)
+
   if (!match) {
     throw new Error(
       `[YClients] Сертификат с номиналом ${amount} не найден среди ${json.data.length} товаров`
